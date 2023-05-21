@@ -35,7 +35,7 @@ void recvThread(int sd) {
 	static const int BUFSIZE = 65536;
 	char buf[BUFSIZE];
 	while (true) {
-		ssize_t res = ::recv(sd, buf, BUFSIZE - 1, 0);
+		ssize_t res = recv(sd, buf, BUFSIZE - 1, 0);
 		if (res == 0 || res == -1) {
 			cerr << "recv return " << res;
 			perror(" ");
