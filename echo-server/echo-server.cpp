@@ -4,8 +4,12 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <thread>
+#include <vector>
 
 using namespace std;
+
+vector<int> sdList;
+
 void usage() {
 	cout << "syntax : echo-server <port> [-e[-b]]\n";
 	cout << "sample : echo-server 1234 -e -b\n";
@@ -41,9 +45,18 @@ void recvThread(int sd) {
 			break;
 		}
 		buf[res] = '\0';
-		cout << buf;
-		fflush(stdout);
-		if (param.echo) {
+		cout << buf << endl;
+		if (param.broadcast) {
+			for(int i=0;i<sdList.size();i++){
+				int sd = sdList[i];
+				res = send(sd, buf, res, 0);
+				if (res == 0 || res == -1) {
+					cerr << "send return " << res;
+					perror(" ");
+					break;
+				}
+			}
+		} else if (param.echo) {
 			res = send(sd, buf, res, 0);
 			if (res == 0 || res == -1) {
 				cerr << "send return " << res;
@@ -98,6 +111,7 @@ int main (int argc, char* argv[]) {
 		struct sockaddr_in cli_addr;
 		socklen_t len = sizeof(cli_addr);
 		int cli_sd = accept(sd, (struct sockaddr *)&cli_addr, &len);
+		sdList.push_back(cli_sd);
 		if (cli_sd == -1) {
 			perror("accept");
 			break;
